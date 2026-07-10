@@ -1,0 +1,14 @@
+<Project>
+
+  <!-- Inherit the solution-wide defaults, then relax rules that don't fit test code. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!--
+      CA1707: underscores in member names. Snake_case test method names
+      (Given_when_then style) are the xUnit idiom and stay allowed in tests.
+    -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+</Project>

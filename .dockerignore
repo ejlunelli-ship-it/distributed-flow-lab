@@ -1,0 +1,25 @@
+# Keep host build artifacts out of the build context. The obj/ folders contain
+# host-specific NuGet paths that break restore/publish inside the Linux image.
+
+# .NET
+**/bin/
+**/obj/
+**/*.user
+
+# Node / frontend
+web/node_modules/
+web/dist/
+web/coverage/
+web/playwright-report/
+web/test-results/
+
+# Git / IDE / OS
+.git/
+.github/
+.idea/
+.vs/
+.DS_Store
+
+# Docs and local env
+docs/
+**/.env

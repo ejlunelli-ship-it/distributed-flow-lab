@@ -1,0 +1,79 @@
+# Base stack for Distributed Flow Lab — MVP container set (canon roadmap):
+# web, api, rabbitmq, postgres. Kafka and Redis are added in Version 1
+# (backlog Epic 7: "Add kafka & redis to stack").
+#
+# Run from the repo root:  docker compose -f docker/docker-compose.yml up
+name: distributed-flow-lab
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dfl}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dfl}
+      POSTGRES_DB: ${POSTGRES_DB:-distributedflowlab}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-dfl}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-dfl}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-dfl}
+    ports:
+      - '${RABBITMQ_PORT:-5672}:5672'
+      - '${RABBITMQ_MGMT_PORT:-15672}:15672'
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__Postgres: 'Host=postgres;Port=5432;Database=${POSTGRES_DB:-distributedflowlab};Username=${POSTGRES_USER:-dfl};Password=${POSTGRES_PASSWORD:-dfl}'
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: ${RABBITMQ_USER:-dfl}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:-dfl}
+    ports:
+      - '${API_PORT:-5080}:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--spider',
+          '-q',
+          'http://localhost:8080/health',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    ports:
+      - '${WEB_PORT:-8080}:80'
+    depends_on:
+      - api
+
+volumes:
+  postgres-data:

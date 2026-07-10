@@ -1,0 +1,13 @@
+# Local dev overrides — applied automatically by `docker compose` when present.
+# Runs the API in the Development environment and surfaces the RabbitMQ
+# management UI. Source hot-reload mounts are intentionally omitted here; the
+# fast inner loop is `dotnet watch` / `npm run dev` on the host (see
+# .docs/05-dev/local-development.md).
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
+  web:
+    environment:
+      NODE_ENV: development

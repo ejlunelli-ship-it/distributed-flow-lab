@@ -1,0 +1,17 @@
+# Production-oriented overrides: no source mounts, always-restart, and
+# credentials sourced strictly from the environment (no defaults).
+# Usage: docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d
+services:
+  postgres:
+    restart: always
+
+  rabbitmq:
+    restart: always
+
+  api:
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+
+  web:
+    restart: always

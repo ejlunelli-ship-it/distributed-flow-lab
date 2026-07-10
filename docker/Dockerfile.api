@@ -1,0 +1,28 @@
+# Multi-stage build for the ASP.NET 8 API host.
+# Build context is the repository root (see docker-compose.yml) so the shared
+# Directory.Build.props and global.json are available to the restore/build.
+
+# Build with the .NET 9 SDK (matches the local/CI toolchain and global.json) while
+# targeting net8.0; the published output runs on the .NET 8 runtime image below.
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /source
+
+# Restore first (better layer caching): copy solution + project files only.
+COPY global.json Directory.Build.props ./
+COPY src/DistributedFlowLab.Domain/DistributedFlowLab.Domain.csproj src/DistributedFlowLab.Domain/
+COPY src/DistributedFlowLab.Application/DistributedFlowLab.Application.csproj src/DistributedFlowLab.Application/
+COPY src/DistributedFlowLab.Infrastructure/DistributedFlowLab.Infrastructure.csproj src/DistributedFlowLab.Infrastructure/
+COPY src/DistributedFlowLab.Api/DistributedFlowLab.Api.csproj src/DistributedFlowLab.Api/
+RUN dotnet restore src/DistributedFlowLab.Api/DistributedFlowLab.Api.csproj
+
+# Copy the rest and publish.
+COPY src/ src/
+RUN dotnet publish src/DistributedFlowLab.Api/DistributedFlowLab.Api.csproj \
+    -c Release -o /app --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+COPY --from=build /app ./
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "DistributedFlowLab.Api.dll"]

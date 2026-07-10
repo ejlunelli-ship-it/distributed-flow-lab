@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (build & test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore DistributedFlowLab.sln
+
+      - name: Build (warnings as errors)
+        run: dotnet build DistributedFlowLab.sln -c Release --no-restore
+
+      - name: Verify formatting
+        run: dotnet format DistributedFlowLab.sln --verify-no-changes --no-restore
+
+      - name: Unit tests
+        run: |
+          dotnet test tests/DistributedFlowLab.Domain.Tests -c Release --no-build
+          dotnet test tests/DistributedFlowLab.Application.Tests -c Release --no-build
+
+      - name: Integration tests (engine + REST contracts)
+        run: dotnet test tests/DistributedFlowLab.Integration.Tests -c Release --no-build
+    # NOTE: broker integration tests (Testcontainers: RabbitMQ/Postgres) join
+    # this job once the adapters land in Sprint 4 (backlog Epic 3/7).
+
+  frontend:
+    name: Frontend (typecheck, lint, test, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build

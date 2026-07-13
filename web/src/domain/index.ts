@@ -1,3 +1,7 @@
 export * from './nodeType'
 export * from './events'
 export * from './simulation'
+export * from './node'
+export * from './edge'
+export * from './nodeCatalog'
+export * from './connectionRules'

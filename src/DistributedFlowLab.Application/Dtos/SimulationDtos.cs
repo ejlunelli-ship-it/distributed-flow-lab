@@ -29,6 +29,24 @@ public sealed record SimulationDto(
         simulation.EndedAt);
 }
 
+/// <summary>
+/// Payload of the SignalR <c>SimulationStateChanged</c> push — notifies a
+/// lifecycle/status transition (websocket-events.md §3). Mirrored by the
+/// frontend as <c>SimulationStateDto</c>.
+/// </summary>
+public sealed record SimulationStateDto(
+    Guid SimulationId,
+    string Status,
+    int CurrentTick,
+    DateTimeOffset UpdatedAt)
+{
+    public static SimulationStateDto FromDomain(Simulation simulation, DateTimeOffset updatedAt) => new(
+        simulation.Id,
+        simulation.Status.ToString(),
+        simulation.CurrentTick,
+        updatedAt);
+}
+
 /// <summary>The canonical event envelope on the wire (event-model.md §2).</summary>
 public sealed record SimulationEventDto(
     Guid EventId,

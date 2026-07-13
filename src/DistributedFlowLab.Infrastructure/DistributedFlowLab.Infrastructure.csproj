@@ -9,6 +9,16 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!--
+      SignalR server types (SimulationHub + IHubContext dispatcher) live in this
+      layer per the canon (Infrastructure/Realtime); the hub cannot live in Api
+      because the IEventPublisher adapter needs IHubContext<SimulationHub> and
+      Infrastructure must not reference Api (ADR-004 dependency rule).
+    -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

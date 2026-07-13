@@ -19,17 +19,20 @@ public sealed class StartSimulationCommandHandler : IRequestHandler<StartSimulat
     private readonly ISimulationRepository _simulations;
     private readonly IEventEmitter _events;
     private readonly ISimulationScheduler _scheduler;
+    private readonly ISimulationStatePublisher _statePublisher;
     private readonly TimeProvider _timeProvider;
 
     public StartSimulationCommandHandler(
         ISimulationRepository simulations,
         IEventEmitter events,
         ISimulationScheduler scheduler,
+        ISimulationStatePublisher statePublisher,
         TimeProvider timeProvider)
     {
         _simulations = simulations;
         _events = events;
         _scheduler = scheduler;
+        _statePublisher = statePublisher;
         _timeProvider = timeProvider;
     }
 
@@ -53,6 +56,9 @@ public sealed class StartSimulationCommandHandler : IRequestHandler<StartSimulat
                 ["startedAt"] = now,
             },
             cancellationToken: cancellationToken);
+
+        await _statePublisher.PublishStateAsync(
+            SimulationStateDto.FromDomain(simulation, now), cancellationToken);
 
         await _scheduler.ScheduleAsync(simulation.Id, cancellationToken);
 

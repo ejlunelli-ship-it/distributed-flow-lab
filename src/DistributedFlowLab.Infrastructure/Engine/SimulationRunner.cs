@@ -1,4 +1,5 @@
 using DistributedFlowLab.Application.Abstractions;
+using DistributedFlowLab.Application.Dtos;
 using DistributedFlowLab.Domain.Entities;
 using DistributedFlowLab.Domain.Enums;
 using DistributedFlowLab.Domain.Events;
@@ -22,6 +23,7 @@ public sealed partial class SimulationRunner
     private readonly ISimulationRepository _simulations;
     private readonly IEventEmitter _events;
     private readonly ISimulationClock _clock;
+    private readonly ISimulationStatePublisher _statePublisher;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<SimulationRunner> _logger;
 
@@ -29,12 +31,14 @@ public sealed partial class SimulationRunner
         ISimulationRepository simulations,
         IEventEmitter events,
         ISimulationClock clock,
+        ISimulationStatePublisher statePublisher,
         TimeProvider timeProvider,
         ILogger<SimulationRunner> logger)
     {
         _simulations = simulations;
         _events = events;
         _clock = clock;
+        _statePublisher = statePublisher;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -62,8 +66,11 @@ public sealed partial class SimulationRunner
             LogRunFailed(ex, simulationId, simulation.CurrentTick);
             if (simulation.Status == SimulationStatus.Running)
             {
-                simulation.Fail(_timeProvider.GetUtcNow());
+                var now = _timeProvider.GetUtcNow();
+                simulation.Fail(now);
                 await _simulations.UpdateAsync(simulation, CancellationToken.None);
+                await _statePublisher.PublishStateAsync(
+                    SimulationStateDto.FromDomain(simulation, now), CancellationToken.None);
             }
         }
     }
@@ -164,5 +171,8 @@ public sealed partial class SimulationRunner
                 ["totalTicks"] = totalTicks,
             },
             cancellationToken: cancellationToken);
+
+        await _statePublisher.PublishStateAsync(
+            SimulationStateDto.FromDomain(simulation, now), cancellationToken);
     }
 }

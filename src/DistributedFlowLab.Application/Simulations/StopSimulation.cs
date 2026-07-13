@@ -16,15 +16,18 @@ public sealed class StopSimulationCommandHandler : IRequestHandler<StopSimulatio
 {
     private readonly ISimulationRepository _simulations;
     private readonly IEventEmitter _events;
+    private readonly ISimulationStatePublisher _statePublisher;
     private readonly TimeProvider _timeProvider;
 
     public StopSimulationCommandHandler(
         ISimulationRepository simulations,
         IEventEmitter events,
+        ISimulationStatePublisher statePublisher,
         TimeProvider timeProvider)
     {
         _simulations = simulations;
         _events = events;
+        _statePublisher = statePublisher;
         _timeProvider = timeProvider;
     }
 
@@ -33,7 +36,8 @@ public sealed class StopSimulationCommandHandler : IRequestHandler<StopSimulatio
         var simulation = await _simulations.GetAsync(request.SimulationId, cancellationToken)
             ?? throw new NotFoundException("Simulation", request.SimulationId);
 
-        simulation.Stop(_timeProvider.GetUtcNow());
+        var now = _timeProvider.GetUtcNow();
+        simulation.Stop(now);
         await _simulations.UpdateAsync(simulation, cancellationToken);
 
         await _events.EmitAsync(
@@ -47,6 +51,9 @@ public sealed class StopSimulationCommandHandler : IRequestHandler<StopSimulatio
                 ["reason"] = "user",
             },
             cancellationToken: cancellationToken);
+
+        await _statePublisher.PublishStateAsync(
+            SimulationStateDto.FromDomain(simulation, now), cancellationToken);
 
         return SimulationDto.FromDomain(simulation);
     }

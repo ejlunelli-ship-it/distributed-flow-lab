@@ -2,6 +2,7 @@ using DistributedFlowLab.Api.Endpoints;
 using DistributedFlowLab.Api.Middleware;
 using DistributedFlowLab.Application;
 using DistributedFlowLab.Infrastructure;
+using DistributedFlowLab.Infrastructure.Realtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 // (in-memory persistence, sequenced event pipeline, simulation engine).
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
+
+// Realtime transport (ADR-002): SimulationHub pushes the authoritative event
+// stream to per-simulationId groups.
+builder.Services.AddSignalR();
 
 // RFC 7807 problem+json for known exceptions; default handler covers the rest.
 builder.Services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
@@ -35,6 +40,9 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 var api = app.MapGroup("/api/v1");
 api.MapScenarioEndpoints();
 api.MapSimulationEndpoints();
+
+// Realtime surface (canon §8): the SimulationHub.
+app.MapHub<SimulationHub>("/hubs/simulation");
 
 app.Run();
 

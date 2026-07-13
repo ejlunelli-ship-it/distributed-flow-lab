@@ -16,11 +16,19 @@ public sealed class PauseSimulationCommandHandler : IRequestHandler<PauseSimulat
 {
     private readonly ISimulationRepository _simulations;
     private readonly IEventEmitter _events;
+    private readonly ISimulationStatePublisher _statePublisher;
+    private readonly TimeProvider _timeProvider;
 
-    public PauseSimulationCommandHandler(ISimulationRepository simulations, IEventEmitter events)
+    public PauseSimulationCommandHandler(
+        ISimulationRepository simulations,
+        IEventEmitter events,
+        ISimulationStatePublisher statePublisher,
+        TimeProvider timeProvider)
     {
         _simulations = simulations;
         _events = events;
+        _statePublisher = statePublisher;
+        _timeProvider = timeProvider;
     }
 
     public async Task<SimulationDto> Handle(PauseSimulationCommand request, CancellationToken cancellationToken)
@@ -38,6 +46,9 @@ public sealed class PauseSimulationCommandHandler : IRequestHandler<PauseSimulat
             EventTypes.EngineSourceId,
             payload: new Dictionary<string, object?> { ["atTick"] = simulation.CurrentTick },
             cancellationToken: cancellationToken);
+
+        await _statePublisher.PublishStateAsync(
+            SimulationStateDto.FromDomain(simulation, _timeProvider.GetUtcNow()), cancellationToken);
 
         return SimulationDto.FromDomain(simulation);
     }

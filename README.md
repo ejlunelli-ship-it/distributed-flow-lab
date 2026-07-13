@@ -73,13 +73,14 @@ join the stack in Version 1.)
 
 ## Development status
 
-**Sprint 1 — Event core: complete.** The Domain model (canonical `NodeType`,
-`SimulationStatus` state machine, `SimulationEvent` envelope), the Event Catalog, the
-simulation engine (`BackgroundService` tick loop with monotonic gap-free `sequence`),
-MediatR lifecycle commands, and the `/api/v1` scenario/simulation endpoints are implemented
-and covered by 35 tests (engine determinism proven by identical event streams across runs).
-Sprint 0 (scaffolding) landed the solution, SPA, Docker stack, and CI. The execution plan
-and per-sprint scope live in
+**Sprint 2 — Realtime streaming: complete.** The `SimulationHub` (SignalR) pushes the
+authoritative event stream to per-simulation groups (`ReceiveSimulationEvent`,
+`SimulationStateChanged`); the SPA subscribes through a reconnecting realtime client and
+folds events into a Zustand store with strict `sequence` ordering and gap detection.
+Live-verified: gap-free delivery with P95 emit→client latency of 17 ms (target ≤ 250 ms).
+Sprint 1 delivered the domain model, the deterministic tick-loop engine and the `/api/v1`
+lifecycle endpoints; Sprint 0 the scaffolding. 51 tests across backend and frontend.
+The execution plan and per-sprint scope live in
 [`docs/05-dev/execution-roadmap.md`](docs/05-dev/execution-roadmap.md); product phases are in
 [`docs/01-product/roadmap.md`](docs/01-product/roadmap.md).
 

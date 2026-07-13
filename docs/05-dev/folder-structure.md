@@ -55,11 +55,15 @@ src/
       RabbitMq/                       #   AMQP adapter: exchanges, queues, routing keys, DLX
       Kafka/                          #   Kafka adapter: topics, partitions, offsets, consumer groups
       Redis/                          #   Redis adapter: cache + pub/sub
-    Realtime/                         #   SignalR IEventPublisher implementation
+    Realtime/                         #   SimulationHub + SignalR IEventPublisher/ISimulationStatePublisher
+                                      #   (hub lives here, not in Api: the publisher needs
+                                      #   IHubContext<SimulationHub> and Infrastructure must not
+                                      #   reference Api — ADR-004 dependency rule)
     Observability/                    #   OpenTelemetry + Serilog wiring
   DistributedFlowLab.Api/             # Composition root / host. Depends on Infrastructure.
     Endpoints/                        #   Minimal API endpoint definitions (/api/v1/...)
-    Hubs/                             #   SimulationHub mapped at /hubs/simulation
+                                      #   (SimulationHub class lives in Infrastructure/Realtime;
+                                      #   Program.cs maps it at /hubs/simulation)
     Configuration/                    #   DI registration, options binding
     Middleware/                       #   RFC 7807 problem+json exception handling
     Program.cs                        #   Host bootstrap, pipeline, endpoint & hub mapping

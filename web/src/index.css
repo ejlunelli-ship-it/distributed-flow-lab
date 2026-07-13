@@ -2,8 +2,144 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design tokens — the single source of visual truth (.docs/03-ui/design-system.md §2).
+ * Components consume the *semantic* tokens (and per-NodeType / per-event accents) via the
+ * Tailwind theme in tailwind.config.ts; they never hardcode hex. Every token has a light and
+ * a dark value: dark is the default, `prefers-color-scheme: light` flips it, and an explicit
+ * `data-theme` on <html> (toggled from the top bar) always wins.
+ */
 :root {
+  color-scheme: light dark;
+
+  /* Semantic palette — dark (default). */
+  --color-bg: #0e1116;
+  --color-surface: #161b22;
+  --color-surface-2: #1c232c;
+  --color-border: #2c3542;
+  --color-text: #e6edf3;
+  --color-text-muted: #9aa7b4;
+  --color-primary: #3b82f6;
+  --color-primary-contrast: #0e1116;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #22d3ee;
+  --color-focus-ring: #60a5fa;
+
+  /* Per-NodeType accents (design-system.md §2.2) — dark. */
+  --node-producer: #3b82f6;
+  --node-consumer: #22d3ee;
+  --node-service: #a78bfa;
+  --node-apigateway: #818cf8;
+  --node-loadbalancer: #2dd4bf;
+  --node-exchange: #fb923c;
+  --node-queue: #f59e0b;
+  --node-topic: #c084fc;
+  --node-partition: #d8b4fe;
+  --node-broker: #f87171;
+  --node-database: #60a5fa;
+  --node-cache: #f472b6;
+  --node-deadletterqueue: #fca5a5;
+  --node-client: #94a3b8;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-bg: #f7f8fa;
+    --color-surface: #ffffff;
+    --color-surface-2: #f0f2f5;
+    --color-border: #d8dee6;
+    --color-text: #0e1116;
+    --color-text-muted: #5a6572;
+    --color-primary: #2563eb;
+    --color-primary-contrast: #ffffff;
+    --color-success: #15803d;
+    --color-warning: #b45309;
+    --color-danger: #b91c1c;
+    --color-info: #0e7490;
+    --color-focus-ring: #2563eb;
+
+    --node-producer: #2563eb;
+    --node-consumer: #0891b2;
+    --node-service: #6d28d9;
+    --node-apigateway: #4338ca;
+    --node-loadbalancer: #0d9488;
+    --node-exchange: #c2410c;
+    --node-queue: #b45309;
+    --node-topic: #9333ea;
+    --node-partition: #7e22ce;
+    --node-broker: #b91c1c;
+    --node-database: #1d4ed8;
+    --node-cache: #db2777;
+    --node-deadletterqueue: #7f1d1d;
+    --node-client: #475569;
+  }
+}
+
+/* Explicit theme override (top-bar toggle) beats the media query in both directions. */
+:root[data-theme='dark'] {
   color-scheme: dark;
+  --color-bg: #0e1116;
+  --color-surface: #161b22;
+  --color-surface-2: #1c232c;
+  --color-border: #2c3542;
+  --color-text: #e6edf3;
+  --color-text-muted: #9aa7b4;
+  --color-primary: #3b82f6;
+  --color-primary-contrast: #0e1116;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #22d3ee;
+  --color-focus-ring: #60a5fa;
+
+  --node-producer: #3b82f6;
+  --node-consumer: #22d3ee;
+  --node-service: #a78bfa;
+  --node-apigateway: #818cf8;
+  --node-loadbalancer: #2dd4bf;
+  --node-exchange: #fb923c;
+  --node-queue: #f59e0b;
+  --node-topic: #c084fc;
+  --node-partition: #d8b4fe;
+  --node-broker: #f87171;
+  --node-database: #60a5fa;
+  --node-cache: #f472b6;
+  --node-deadletterqueue: #fca5a5;
+  --node-client: #94a3b8;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0f2f5;
+  --color-border: #d8dee6;
+  --color-text: #0e1116;
+  --color-text-muted: #5a6572;
+  --color-primary: #2563eb;
+  --color-primary-contrast: #ffffff;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-danger: #b91c1c;
+  --color-info: #0e7490;
+  --color-focus-ring: #2563eb;
+
+  --node-producer: #2563eb;
+  --node-consumer: #0891b2;
+  --node-service: #6d28d9;
+  --node-apigateway: #4338ca;
+  --node-loadbalancer: #0d9488;
+  --node-exchange: #c2410c;
+  --node-queue: #b45309;
+  --node-topic: #9333ea;
+  --node-partition: #7e22ce;
+  --node-broker: #b91c1c;
+  --node-database: #1d4ed8;
+  --node-cache: #db2777;
+  --node-deadletterqueue: #7f1d1d;
+  --node-client: #475569;
 }
 
 html,
@@ -14,4 +150,7 @@ body,
 
 body {
   margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: Inter, system-ui, sans-serif;
 }

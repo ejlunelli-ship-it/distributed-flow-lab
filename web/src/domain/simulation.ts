@@ -14,9 +14,23 @@ export const SIMULATION_STATUSES = [
 
 export type SimulationStatus = (typeof SIMULATION_STATUSES)[number]
 
+/** Payload of the `SimulationStateChanged` push (websocket-events.md §3). */
 export interface SimulationStateDto {
   simulationId: string
+  status: SimulationStatus
+  currentTick: number
+  updatedAt: string
+}
+
+/** Simulation resource returned by /api/v1/simulations (api-contracts.md §4). */
+export interface SimulationDto {
+  id: string
   scenarioId: string
   status: SimulationStatus
   currentTick: number
+  maxTicks: number
+  tickIntervalMs: number
+  createdAt: string
+  startedAt: string | null
+  endedAt: string | null
 }

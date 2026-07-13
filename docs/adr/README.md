@@ -29,6 +29,7 @@ and every document ends with a **Related documents** section.
 | [ADR-013](./ADR-013-testing-strategy.md) | Testing strategy — a deterministic test pyramid | Accepted | 2026-07-07 |
 | [ADR-014](./ADR-014-scaffolding-toolchain-reality.md) | Sprint 0 scaffolding — toolchain reality vs. canon | Accepted | 2026-07-10 |
 | [ADR-015](./ADR-015-oss-dependency-pinning.md) | OSS dependency pinning — MediatR 12.x and FluentAssertions 7.x | Accepted | 2026-07-10 |
+| [ADR-016](./ADR-016-canvas-connection-rules.md) | Curated node-type connection rules and a store-owned canvas | Accepted | 2026-07-13 |
 
 ## ADR process
 

@@ -1,4 +1,5 @@
 using DistributedFlowLab.Application.Abstractions;
+using DistributedFlowLab.Application.Dtos;
 using DistributedFlowLab.Application.Simulations;
 using DistributedFlowLab.Domain.Entities;
 using DistributedFlowLab.Domain.Enums;
@@ -19,6 +20,7 @@ public sealed class SimulationLifecycleHandlerTests
     private readonly ISimulationRepository _simulations = Substitute.For<ISimulationRepository>();
     private readonly IEventEmitter _events = Substitute.For<IEventEmitter>();
     private readonly ISimulationScheduler _scheduler = Substitute.For<ISimulationScheduler>();
+    private readonly ISimulationStatePublisher _statePublisher = Substitute.For<ISimulationStatePublisher>();
     private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero));
 
     private Simulation NewDraft()
@@ -32,7 +34,7 @@ public sealed class SimulationLifecycleHandlerTests
     public async Task Start_transitions_emits_SimulationStarted_and_schedules_the_run()
     {
         var simulation = NewDraft();
-        var handler = new StartSimulationCommandHandler(_simulations, _events, _scheduler, _time);
+        var handler = new StartSimulationCommandHandler(_simulations, _events, _scheduler, _statePublisher, _time);
 
         var dto = await handler.Handle(new StartSimulationCommand(simulation.Id), CancellationToken.None);
 
@@ -55,7 +57,7 @@ public sealed class SimulationLifecycleHandlerTests
     {
         var simulation = NewDraft();
         simulation.Start(_time.GetUtcNow());
-        var handler = new PauseSimulationCommandHandler(_simulations, _events);
+        var handler = new PauseSimulationCommandHandler(_simulations, _events, _statePublisher, _time);
 
         var dto = await handler.Handle(new PauseSimulationCommand(simulation.Id), CancellationToken.None);
 
@@ -77,7 +79,7 @@ public sealed class SimulationLifecycleHandlerTests
         var simulation = NewDraft();
         simulation.Start(_time.GetUtcNow());
         simulation.Pause();
-        var handler = new ResumeSimulationCommandHandler(_simulations, _events);
+        var handler = new ResumeSimulationCommandHandler(_simulations, _events, _statePublisher, _time);
 
         var dto = await handler.Handle(new ResumeSimulationCommand(simulation.Id), CancellationToken.None);
 
@@ -98,7 +100,7 @@ public sealed class SimulationLifecycleHandlerTests
     {
         var simulation = NewDraft();
         simulation.Start(_time.GetUtcNow());
-        var handler = new StopSimulationCommandHandler(_simulations, _events, _time);
+        var handler = new StopSimulationCommandHandler(_simulations, _events, _statePublisher, _time);
 
         var dto = await handler.Handle(new StopSimulationCommand(simulation.Id), CancellationToken.None);
 
@@ -118,7 +120,7 @@ public sealed class SimulationLifecycleHandlerTests
     public async Task Resume_when_not_paused_throws_InvalidSimulationStateException_and_emits_nothing()
     {
         var simulation = NewDraft();
-        var handler = new ResumeSimulationCommandHandler(_simulations, _events);
+        var handler = new ResumeSimulationCommandHandler(_simulations, _events, _statePublisher, _time);
 
         var act = () => handler.Handle(new ResumeSimulationCommand(simulation.Id), CancellationToken.None);
 
@@ -130,10 +132,28 @@ public sealed class SimulationLifecycleHandlerTests
     [Fact]
     public async Task Unknown_simulation_throws_NotFoundException()
     {
-        var handler = new StartSimulationCommandHandler(_simulations, _events, _scheduler, _time);
+        var handler = new StartSimulationCommandHandler(_simulations, _events, _scheduler, _statePublisher, _time);
 
         var act = () => handler.Handle(new StartSimulationCommand(Guid.NewGuid()), CancellationToken.None);
 
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Lifecycle_transitions_push_SimulationStateChanged()
+    {
+        var simulation = NewDraft();
+        var start = new StartSimulationCommandHandler(_simulations, _events, _scheduler, _statePublisher, _time);
+        var stop = new StopSimulationCommandHandler(_simulations, _events, _statePublisher, _time);
+
+        await start.Handle(new StartSimulationCommand(simulation.Id), CancellationToken.None);
+        await stop.Handle(new StopSimulationCommand(simulation.Id), CancellationToken.None);
+
+        await _statePublisher.Received(1).PublishStateAsync(
+            Arg.Is<SimulationStateDto>(s => s.SimulationId == simulation.Id && s.Status == "Running"),
+            Arg.Any<CancellationToken>());
+        await _statePublisher.Received(1).PublishStateAsync(
+            Arg.Is<SimulationStateDto>(s => s.SimulationId == simulation.Id && s.Status == "Stopped"),
+            Arg.Any<CancellationToken>());
     }
 }

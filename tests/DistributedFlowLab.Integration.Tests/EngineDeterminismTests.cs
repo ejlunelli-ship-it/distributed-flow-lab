@@ -27,6 +27,16 @@ public sealed class EngineDeterminismTests
             => await Task.Yield();
     }
 
+    /// <summary>Transport-less publisher: the harness observes the store, not the wire.</summary>
+    private sealed class NoopPublisher : IEventPublisher, ISimulationStatePublisher
+    {
+        public Task PublishAsync(SimulationEvent simulationEvent, CancellationToken cancellationToken)
+            => Task.CompletedTask;
+
+        public Task PublishStateAsync(Application.Dtos.SimulationStateDto state, CancellationToken cancellationToken)
+            => Task.CompletedTask;
+    }
+
     /// <summary>One isolated engine pipeline over in-memory stores.</summary>
     private sealed class Harness
     {
@@ -40,9 +50,11 @@ public sealed class EngineDeterminismTests
 
         public Harness()
         {
-            Emitter = new SequencedEventEmitter(EventStore, new NullEventPublisher(), TimeProvider.System);
+            var publisher = new NoopPublisher();
+            Emitter = new SequencedEventEmitter(EventStore, publisher, TimeProvider.System);
             Runner = new SimulationRunner(
-                Simulations, Emitter, new ImmediateClock(), TimeProvider.System, NullLogger<SimulationRunner>.Instance);
+                Simulations, Emitter, new ImmediateClock(), publisher, TimeProvider.System,
+                NullLogger<SimulationRunner>.Instance);
         }
 
         /// <summary>Creates, starts, and runs a simulation to completion; returns its timeline.</summary>

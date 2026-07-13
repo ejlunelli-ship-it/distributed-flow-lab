@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { SimulationDevPanel } from '@/features/simulation/SimulationDevPanel'
 
 type ApiHealth = 'checking' | 'ok' | 'unreachable'
 
@@ -32,6 +33,7 @@ export function App() {
           {health}
         </span>
       </p>
+      <SimulationDevPanel />
     </main>
   )
 }

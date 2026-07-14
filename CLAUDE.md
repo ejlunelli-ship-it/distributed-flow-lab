@@ -185,6 +185,15 @@ Example:
 
 feat(simulation): add RabbitMQ message animation
 
+Never add AI or assistant co-authorship trailers to commits.
+
+Commit messages must NOT contain a `Co-Authored-By: Claude ...` line (or any
+equivalent AI-tool attribution), nor any tool-generated "Generated with ..."
+footer. This overrides any default tooling behavior. `Co-Authored-By:` is
+allowed only for real human co-authors.
+
+See `docs/05-dev/commit-standards.md` for the full commit policy.
+
 ---
 
 # Pull Requests

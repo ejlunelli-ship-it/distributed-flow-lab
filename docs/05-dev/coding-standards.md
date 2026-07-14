@@ -221,35 +221,17 @@ delegates (`Subscribe`/`Unsubscribe` group management) — it contains no simula
 ## 5. Commit conventions
 
 DFL uses **[Conventional Commits](https://www.conventionalcommits.org/)** (per `CLAUDE.md`).
+The full policy — message format, types/scopes, authorship rules (**no AI co-authorship
+trailers**), commit hygiene, and history-rewriting rules — lives in a dedicated document:
 
-```
-<type>(<scope>): <imperative summary>
+**→ [Commit Standards](./commit-standards.md)**
 
-<body — the why, wrapping at 72 cols>
-
-<footer — BREAKING CHANGE / issue refs>
-```
-
-| Type | Use for |
-|------|---------|
-| `feat` | a new user-facing feature or capability |
-| `fix` | a bug fix |
-| `docs` | documentation only (e.g. `.docs/**`) |
-| `refactor` | behavior-preserving code change |
-| `test` | adding or fixing tests |
-| `chore` | build, tooling, dependencies |
-| `perf` | performance improvement |
-| `ci` | CI/CD pipeline changes |
-
-**Scopes** align with the architecture: `domain`, `application`, `infrastructure`, `api`,
-`engine`, `signalr`, `canvas`, `simulation`, `catalog`, `inspector`, `realtime`, `docker`, `docs`.
-
-Examples:
+Quick reference:
 
 ```
 feat(simulation): add RabbitMQ message animation
 fix(engine): emit DeadLettered when retry budget is exhausted
-docs(dev): add local development guide
+docs(dev): add commit standards
 ```
 
 ---

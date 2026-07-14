@@ -180,7 +180,8 @@ Improvements.
 
 | Document | Purpose |
 |----------|---------|
-| [coding-standards.md](./05-dev/coding-standards.md) | C#/.NET 8 and React/TS standards, layering rules, SOLID, commits, review checklist. |
+| [coding-standards.md](./05-dev/coding-standards.md) | C#/.NET 8 and React/TS standards, layering rules, SOLID, review checklist. |
+| [commit-standards.md](./05-dev/commit-standards.md) | Conventional Commits, authorship rules (no AI co-authorship trailers), commit hygiene, history-rewriting policy. |
 | [folder-structure.md](./05-dev/folder-structure.md) | Full repository layout and rationale. |
 | [technologies.md](./05-dev/technologies.md) | The technology stack with justifications and ADR links. |
 | [local-development.md](./05-dev/local-development.md) | Running DFL locally with Docker Compose. |
